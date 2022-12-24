@@ -30,6 +30,8 @@ const accountSchema =  new Schema({
   
 });
 
+const Account = mongoose.model('Account', accountSchema);
+
 const productSchema = new Schema({
 	modelName: String,
 	name: String,
@@ -49,14 +51,22 @@ async function main(modelAccount, ...args){
    let arrayObjects = ["Account"];
    for(let i = 0; i<arrayObjects.length; i++){
    	//console.log(modelAccount);
-   	const ObjectInstance = mongoose.model(arrayObjects[i], modelAccount);
-   	const  doc = new ObjectInstance();
+   	const doc = new Account()
    	doc.email = args[0];
-   	doc.password= args[1];
+   	doc.password = args[1];
+	const searchresult = await Account.find({email: args[0]}).exec();
+	//console.log(typeof searchresult);
+	if(searchresult[0]){
+		console.log(searchresult[0].email);
+	}else{
+		console.log("not ok");
+	}
+	//console.log(Object.getOwnPropertyNames(Account));
+   	//doc.find()
    	//console.log(doc);
    	//console.log(Object.keys(doc.pswd));
-   	await doc.save();
-   	await doc.save();
+   	//await doc.save();
+   	//await doc.save();
    }
    console.log("ok");
    // const Account =  mongoose.model('Account', accountSchema );
