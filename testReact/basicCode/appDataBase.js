@@ -30,6 +30,13 @@ const accountSchema =  new Schema({
   
 });
 
+const sessionSchema = new Schema({
+	modelName: {type: String, default: 'Session'},
+	sessionid: { type: String, default: null },
+	expires: { type: Date, default: null },
+});
+
+
 const Account = mongoose.model('Account', accountSchema);
 
 const productSchema = new Schema({

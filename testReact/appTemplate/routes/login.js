@@ -2,6 +2,8 @@ var express  = require('express');
 var router = express.Router();
 var dataBase = require('../../basicCode/appDataBase');
 
+
+// setup session middlewares
 const bcrypt = require('bcrypt')
 const saltRounds = 10;
 const password = null;
@@ -29,7 +31,7 @@ function isValidLoginForm(email,pswd){
 }
 
 router.get('/', function(req, res, next){
-	res.render('login', { title: 'Login' });
+	res.render('login', { title: 'Login page' });
 });
 
 router.post('/', express.urlencoded({ extended: false }), function(req, res, next){
@@ -38,7 +40,7 @@ router.post('/', express.urlencoded({ extended: false }), function(req, res, nex
 	if (isValidLoginForm(res.req.body.email, res.req.body.pswd)){
 		req.session.regenerate(function (err){
 		if (err) next(err)
-		req.session.user = req.body.user
+		req.session.user = req.body.email
 		req.session.save(function (err){
 			if (err) return next(err)
 			res.redirect('/')

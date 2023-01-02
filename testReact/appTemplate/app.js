@@ -5,14 +5,13 @@ var path = require('path');
 
 // auth libaries
 var cookieParser = require('cookie-parser');
-var csrf = require('csurf');
+//var csrf = require('csurf');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var logger = require('morgan');
 
-var csrfProtection = csrf({ cookie: true })
+//var csrfProtection = csrf({ cookie: true })
 var parseForm = bodyParser.urlencoded({ extended: false});
-
 
 // routes
 var indexRouter = require('./routes/index');
@@ -30,16 +29,46 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// setup session middlewares
 
 app.set('trust proxy', 1)
-const expiryDate = new Date(Date.now() + 1 * 1 * 1000) // 10 minutes
+//const expiryDate = new Date(Date.now() + 1 * 1 * 1) // 10 minutes
+
 app.use(session({
+   name: 'session',
    resave: false,
    saveUninitialized: false,
    secret: 'here',
-   expires: expiryDate,
-   cokie: { secure: true}
+   cookie: { 
+   	secure: true,
+   	httpOnly: true,
+   	expires: 1000
+   },
+}));
+
+function createSession(req, res, next){
+	try{
+		//app.use(session(sess));
+		//console.log(res.session);
+		res.render('login', {title: 'Login page'});
+	}catch(err){
+		res.status(500).send('Sesssion not started');
+	}
+}
+
+// setup session middlewares
+/*
+app.set('trust proxy', 1)
+const expiryDate = new Date(Date.now() + 1 * 1 * 1000) // 10 minutes
+app.use(session({
+   name: 'session',
+   resave: false,
+   saveUninitialized: false,
+   secret: 'here',
+   cookie: { 
+   	secure: true,
+   	httpOnly: true,
+   	expires: expiryDate
+   }
 }));
 
 // cookie is true 'use it' ? 'not use it'!
@@ -54,16 +83,35 @@ function isAuthenticated (req, res, next){
    else next('route')
 }
 //isAuthenticated
-app.get('/',function (req, res) {
+*/
+
+
+function isAuthenticated (req, res, next){
+	try{
+		if (req.session.user ) next()
+   		else next('route')
+	}
+	catch(err){
+  		res.status(404).send('Something broke!')
+	}
+
+}
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', function (req, res) {
+//console.log(res.session);
+	console.log(Object.keys(req));
+	console.log(req.session);
+	//console.log(req.sessionID);
+	console.log(req.sessionStore);
+	//onsole.log(req.remoteAddress);
 	res.render('index', {title: 'Main Page'})
 	//res.send(escapeHtml(req.session.user) + '!' + ' <a href="/logout">Logout</a>')
 })
 
-
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/login', loginRouter)
-
+app.use('/login', loginRouter);
+app.use('/users', isAuthenticated, usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
